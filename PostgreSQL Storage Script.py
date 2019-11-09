@@ -4,7 +4,7 @@ import os
 
 directory = os.fsencode(r'C:\Users\phoki\Documents\Georgetown\Data\stats_data\stats_data')
 
-conn = psycopg2.connect(database='test', user='postgres', host='localhost', port='5432')
+conn = psycopg2.connect(database='nfl_stats', user='postgres', password ='georgetown', host='localhost', port='5432')
 
 cur = conn.cursor()
 
