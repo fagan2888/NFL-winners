@@ -1,0 +1,33 @@
+create table final_table_before_joinv2 as (
+select week_number,
+	   season_year,
+	   game_id,
+	   game_location,
+	   team1,
+	   team2,
+	   score_for,
+	   score_against,
+       (score_for - score_against) as point_differential,
+	   team_passing_yards,
+	   team_rushing_yards,
+	   team_turnovers_taken,
+	   team_turnovers_given,
+	   (team_turnovers_taken - team_turnovers_given) as turnover_differential,
+	   team_passing_yards_against,
+	   team_rushing_yards_against,
+	   team_win_percentage,
+	   outcome,
+	   rank () over (partition by season_year, week_number order by score_for desc) as points_for_rank,
+	   rank () over (partition by season_year, week_number order by score_against)as points_against_rank,
+	   rank () over (partition by season_year, week_number order by team_passing_yards desc) as passing_offense_rank,
+       rank () over (partition by season_year, week_number order by team_rushing_yards desc) as rushing_offense_rank,
+	   rank () over (partition by season_year, week_number order by (score_for - score_against) desc) as point_differential_rank,
+	   rank () over (partition by season_year, week_number order by team_turnovers_taken desc) as turnovers_taken_rank,
+	   rank () over (partition by season_year, week_number order by team_turnovers_given asc) as turnovers_given_rank,
+	   rank () over (partition by season_year, week_number order by (team_turnovers_taken - team_turnovers_given) desc) as turnover_differential_rank,
+	   rank () over (partition by season_year, week_number order by team_passing_yards_against asc) as passing_defense_rank,
+	   rank () over (partition by season_year, week_number order by team_rushing_yards_against asc) as rushing_defense_rank,
+	   rank () over (partition by season_year, week_number order by team_win_percentage desc) as win_percentage_rank
+from final_tablev2
+group by week_number, season_year, game_id, game_location, team1, team2, score_for, score_against, point_differential, team_passing_yards, team_rushing_yards, team_turnovers_taken, team_turnovers_given, turnover_differential, team_passing_yards_against, team_rushing_yards_against, team_win_percentage, outcome
+);

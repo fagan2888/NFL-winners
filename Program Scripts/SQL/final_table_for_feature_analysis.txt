@@ -1,0 +1,76 @@
+create table final_tablev3 as (
+	select *,
+	       (sum(points_for_rank + points_against_rank + passing_offense_rank + rushing_offense_rank + point_differential_rank + turnovers_taken_rank + turnovers_given_rank + turnover_differential_rank + passing_defense_rank + rushing_defense_rank + win_percentage_rank) / 11) as power_ranking
+	from final_table_before_joinv2
+	group by week_number, season_year, game_id, game_location, team1, team2, score_for, score_against, point_differential, team_passing_yards, team_rushing_yards, team_turnovers_taken, team_turnovers_given, turnover_differential, team_passing_yards_against, team_rushing_yards_against, team_win_percentage, outcome, points_for_rank, points_against_rank, passing_offense_rank, rushing_offense_rank, point_differential_rank, turnovers_taken_rank, turnovers_given_rank, turnover_differential_rank, passing_defense_rank, rushing_defense_rank, win_percentage_rank);
+
+create table final_table_home_games as (
+	select *
+    from final_tablev3
+    where game_location = 1
+    group by week_number, season_year, game_id, game_location, team1, team2, score_for, score_against, point_differential, team_passing_yards, team_rushing_yards, team_turnovers_taken, team_turnovers_given, turnover_differential, team_passing_yards_against, team_rushing_yards_against, team_win_percentage, outcome, points_for_rank, points_against_rank, passing_offense_rank, rushing_offense_rank, point_differential_rank, turnovers_taken_rank, turnovers_given_rank, turnover_differential_rank, passing_defense_rank, rushing_defense_rank, win_percentage_rank, power_ranking);
+
+create table final_table_away_games as (
+	select *
+    from final_tablev3
+    where game_location = 0
+    group by week_number, season_year, game_id, game_location, team1, team2, score_for, score_against, point_differential, team_passing_yards, team_rushing_yards, team_turnovers_taken, team_turnovers_given, turnover_differential, team_passing_yards_against, team_rushing_yards_against, team_win_percentage, outcome, points_for_rank, points_against_rank, passing_offense_rank, rushing_offense_rank, point_differential_rank, turnovers_taken_rank, turnovers_given_rank, turnover_differential_rank, passing_defense_rank, rushing_defense_rank, win_percentage_rank, power_ranking);
+
+create table final_table_joined as (
+select a.week_number as week_nbr,
+       a.game_id as unique_game_id,
+       a.season_year as season_yr,
+       a.game_location as game_loc,
+       a.team1 as home_team,
+       a.team2 as away_team,
+	   a.outcome as home_outcome,
+       a.score_for as home_score_for,
+       a.score_against as home_score_against,
+       a.point_differential as home_point_differential,
+	   a.team_passing_yards as home_passing_yards,
+	   a.team_rushing_yards as home_rushing_yards,
+	   a.team_turnovers_taken as home_turnovers_taken,
+	   a.team_turnovers_given as home_turnovers_given,
+	   a.turnover_differential as home_turnover_differential,
+	   a.team_passing_yards_against as home_passing_yards_against,
+	   a.team_rushing_yards_against as home_rushing_yards_against,
+	   a.team_win_percentage as home_win_percentage,
+	   a.points_for_rank as home_points_for_rank,
+	   a.points_against_rank as home_points_against_rank,
+	   a.passing_offense_rank as home_passing_offense_rank,
+	   a.rushing_offense_rank as home_rushing_offense_rank,
+	   a.point_differential_rank as home_point_differential_rank,
+	   a.turnovers_taken_rank as home_turnovers_taken_rank,
+	   a.turnovers_given_rank as home_turnovers_given_rank,
+	   a.turnover_differential_rank as home_turnover_differential_rank,
+	   a.passing_defense_rank as home_passing_defense_rank,
+	   a.rushing_defense_rank as home_rushing_defense_rank,
+	   a.win_percentage_rank as home_win_percentage_rank,
+	   a.power_ranking as home_power_ranking,
+	   c.score_for as away_score_for,
+	   c.score_against as away_score_against,
+	   c.point_differential as away_point_differential,
+	   c.team_passing_yards as away_passing_yards,
+	   c.team_rushing_yards as away_rushing_yards,
+	   c.team_turnovers_taken as away_turnovers_taken,
+	   c.team_turnovers_given as away_turnovers_given,
+	   c.turnover_differential as away_turnover_differential,
+	   c.team_passing_yards_against as away_passing_yards_against,
+	   c.team_rushing_yards_against as away_rushing_yards_against,
+	   c.team_win_percentage as away_win_percentage,
+	   c.points_for_rank as away_points_for_rank,
+	   c.points_against_rank as away_points_against_rank,
+	   c.passing_offense_rank as away_passing_offense_rank,
+	   c.rushing_offense_rank as away_rushing_offense_rank,
+	   c.point_differential_rank as away_point_differential_rank,
+	   c.turnovers_taken_rank as away_turnovers_taken_rank,
+	   c.turnovers_given_rank as away_turnovers_given_rank,
+	   c.turnover_differential_rank as away_turnover_differential_rank,
+	   c.passing_defense_rank as away_passing_defense_rank,
+	   c.rushing_defense_rank as away_rushing_defense_rank,
+	   c.win_percentage_rank as away_win_percentage_rank,
+	   c.power_ranking as away_power_ranking
+	
+from final_table_home_games a
+inner join final_table_away_games c on (a.game_id = c.game_id)
+group by week_nbr, unique_game_id, season_yr, game_loc, home_team, away_team, home_outcome, home_score_for, home_score_against, home_point_differential, home_passing_yards, home_rushing_yards, home_turnovers_taken, home_turnovers_given, home_turnover_differential, home_passing_yards_against, home_rushing_yards_against, home_win_percentage, home_points_for_rank, home_points_against_rank, home_passing_offense_rank, home_rushing_offense_rank, home_point_differential_rank, home_turnovers_taken_rank, home_turnovers_given_rank, home_turnover_differential_rank, home_passing_defense_rank, home_rushing_defense_rank, home_win_percentage_rank, home_power_ranking, away_score_for, away_score_against, away_point_differential, away_passing_yards, away_rushing_yards, away_turnovers_taken, away_turnovers_given, away_turnover_differential, away_passing_yards_against, away_rushing_yards_against, away_win_percentage, away_points_for_rank, away_points_against_rank, away_passing_offense_rank, away_rushing_offense_rank, away_point_differential_rank, away_turnovers_taken_rank, away_turnovers_given_rank, away_turnover_differential_rank, away_passing_defense_rank, away_rushing_defense_rank, away_win_percentage_rank, away_power_ranking);

@@ -1,0 +1,96 @@
+create table game_logs as
+select
+		team,
+		game_id,
+		season_year,
+		game_date,
+		game_location,
+		game_won,
+		avg(player_team_score) as player_team_score,
+		avg(opponent_score) as opponent_score,
+		avg(age) as average_team_age,
+		sum(passing_attempts) as passing_attempts,
+		sum(passing_completions) as passing_completions,
+		sum(passing_yards) as passing_yards,
+		sum(passing_touchdowns) as passing_touchdowns,
+		sum(passing_interceptions) as passing_interceptions,
+		sum(passing_sacks) as passing_sacks,
+		sum(passing_sacks_yards_lost) as passing_sacks_yards_lost,
+		sum(rushing_attempts) as rushing_attempts,
+		sum(rushing_yards) as rushing_yards,
+		sum(rushing_touchdowns) as rushing_touchdowns,
+		sum(receiving_targets) as receiving_targets,
+		sum(receiving_receptions) as receiving_receptions,
+		sum(receiving_yards) as receiving_yards,
+		sum(receiving_touchdowns) as receiving_touchdowns,
+		sum(kick_return_attempts) as kick_return_attempts,
+		sum(kick_return_yards) as kick_return_yards,
+		sum(kick_return_touchdowns) as kick_return_touchdowns,
+		sum(punt_return_attempts) as punt_return_attempts,
+		sum(punt_return_yards) as punt_return_yards,
+		sum(punt_return_touchdowns) as punt_return_touchdowns,
+		sum(defense_sacks) as defense_sacks,
+		sum(defense_tackles) as defense_tackles,
+		sum(defense_tackle_assists) as defense_tackle_assists,
+		sum(defense_interceptions) as defense_interceptions,
+		sum(defense_interception_yards) as defense_interception_yards,
+		sum(defense_interception_touchdowns) as defense_interception_touchdowns,
+		sum(defense_safeties) as defense_safeties,
+		sum(point_after_attempts) as point_after_attempts,
+		sum(point_after_makes) as point_after_makes,
+		sum(field_goal_attempts) as field_goal_attempts,
+		sum(field_goal_makes) as field_goal_makes,
+		sum(punting_attempts) as punting_attempts,
+		sum(punting_yards) as punting_yards,
+		sum(punting_blocked) as punting_blocked,
+		case when sum(passing_attempts) != 0 then (sum(passing_yards) + 20 * sum(passing_touchdowns) - 45 * sum(passing_interceptions)) / sum(passing_attempts) else 0 end as adjusted_passing_yards_per_attempt,
+		case when sum(passing_attempts) != 0 then (sum(passing_yards) + 20 * sum(passing_touchdowns) - 45 * sum(passing_interceptions) - sum(passing_sacks_yards_lost)) / (sum(passing_attempts) + sum(passing_sacks)) else 0 end as adjusted_net_passing_yards_per_attempt,
+		case when sum(rushing_attempts) != 0 then sum(rushing_yards) / sum(rushing_attempts) else 0 end as rushing_yards_per_attempt
+from player_logs
+where season_year >= 2000
+group by team, game_id, season_year, game_date, game_location, game_won
+;
+
+Delete from game_logs where passing_attempts = 0;
+
+alter table game_logs
+add completion_percentage numeric,
+add passing_yards_per_attempt numeric,
+add passing_touchdowns_per_attempt numeric,
+add passing_interceptions_per_attempt numeric,
+add completion_percentage_for_pr numeric,
+add pypa_for_pr numeric,
+add ptpa_for_pr numeric,
+add pipa_for_pr numeric,
+add w_completion_percentage_for_pr numeric,
+add w_pypa_for_pr numeric,
+add w_ptpa_for_pr numeric,
+add w_pipa_for_pr numeric,
+add passer_rating numeric;
+
+update game_logs
+set completion_percentage = case when passing_attempts != 0 then passing_completions / passing_attempts else 0 end;
+update game_logs
+set passing_yards_per_attempt = case when passing_attempts != 0 then passing_yards / passing_attempts else 0 end;
+update game_logs
+set passing_touchdowns_per_attempt = case when passing_attempts != 0 then passing_touchdowns / passing_attempts else 0 end;
+update game_logs
+set passing_interceptions_per_attempt = case when passing_attempts != 0 then passing_interceptions / passing_attempts else 0 end;
+update game_logs
+set completion_percentage_for_pr = case when completion_percentage >= .775 then .775 else completion_percentage end;
+update game_logs
+set pypa_for_pr = case when passing_yards_per_attempt >= 12.5 then 12.5 else passing_yards_per_attempt end;
+update game_logs
+set ptpa_for_pr = case when passing_touchdowns_per_attempt >= .119 then .119 else passing_touchdowns_per_attempt end;
+update game_logs
+set pipa_for_pr = passing_interceptions_per_attempt;
+update game_logs
+set w_completion_percentage_for_pr = (completion_percentage_for_pr - 0.3)*5;
+update game_logs 
+set w_pypa_for_pr = ((pypa_for_pr - 3) * 0.25);
+update game_logs
+set w_ptpa_for_pr = ptpa_for_pr * 20;
+update game_logs
+set w_pipa_for_pr = 2.375 - (pipa_for_pr * 25);
+update game_logs
+set passer_rating = ((w_completion_percentage_for_pr + w_pypa_for_pr + w_ptpa_for_pr + w_pipa_for_pr) / 6) * 100;
