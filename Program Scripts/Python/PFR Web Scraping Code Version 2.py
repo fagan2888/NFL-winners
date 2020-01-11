@@ -305,7 +305,7 @@ class Scraper():
 
                 player_career_end = int(player.contents[1].split(' ')[1].split('-')[1])
 
-                if player_career_end >= 2009:
+                if player_career_end >= 1950:
 
                     player_links.append(BASE_URL.format(player.contents[0].contents[0].get('href')))
 
@@ -317,7 +317,7 @@ class Scraper():
 
                 player_career_end = int(player.contents[1].split(' ')[2].split('-')[1])
 
-                if player_career_end >= 2009:
+                if player_career_end >= 1950:
 
                     player_links.append(BASE_URL.format(player.contents[0].get('href')))
 
